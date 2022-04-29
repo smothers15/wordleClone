@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <title>Guess the Word</title>
     <link href="style.css" rel="stylesheet">
+    <style>
+        .back{
+            background: #121213;
+        }
+        .hidden{
+            display: none;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -57,21 +65,25 @@
             <div class="input-container">
                 <input type="text" maxlength="5" minlength="5">
                 <button>Enter!</button>
+                <button id="restart">Restart</button>
             </div>
             <p id="game-over"></p>
+
         </div>
     </div>
 <script>
     const ans = ["CRANE", "LILLY"];
     let ran = Math.round(Math.random()*(ans.length-1));
-    const answer = ans[ran]; //todo make this random word
+    let answer = ans[ran]; //todo make this random word
     const board = document.getElementById('board');
     const textBox = document.querySelector('input');
     const submitButton = document.querySelector('button');
     const gameOverMessage = document.getElementById('game-over');
+    const restart = document.getElementById('restart');
+    let reset = false;
     //console.log(answer);
 
-    let currentGuessNumber = 0
+    let currentGuessNumber = 0;
 
     submitButton.addEventListener('click', function(e){
         let guess = textBox.value;
@@ -88,20 +100,48 @@
         //todo check for win
         if(guess.toUpperCase() === answer.toUpperCase()){
             gameOverMessage.textContent = 'You Won!!';
-            submitButton.remove();
-            textBox.remove();
+            submitButton.classList.add('hidden');
+            textBox.classList.add('hidden');
             return
         }
 
         //todo check for loss
         if(currentGuessNumber >= board.children.length){
-            gameOverMessage.textContent = `You lost :( The word was ${answer}.`
-            submitButton.remove();
-            textBox.remove();
+            gameOverMessage.textContent = `You lost :( The word was ${answer}.`;
+            submitButton.classList.add('hidden');
+            textBox.classList.add('hidden');
+
             return
         }
         textBox.value = "";
-    })
+    });
+
+    restart.addEventListener('click', function(){
+        gameOverMessage.textContent="";
+        textBox.value="";
+        submitButton.classList.remove('hidden');
+        textBox.classList.remove('hidden');
+        answer=ans[Math.round(Math.random()*(ans.length-1))];
+        currentGuessNumber = 0;
+        let currentGuessRow = board.children[currentGuessNumber];
+        console.log(currentGuessRow);
+        let matchArray = ['','','','',''];
+        for(let t=0; t<5; t++){
+            let columns = currentGuessRow.children;
+            for(let i=0; i<matchArray.length;i++){
+                let column = columns[i];
+                column.textContent="";
+
+                column.classList.add('back')
+            }
+            currentGuessNumber++;
+            currentGuessRow = board.children[currentGuessNumber];
+        }
+        currentGuessNumber=0;
+        reset = true;
+
+    });
+
 
     function writeGuess(guess){
         let matchArray = buildMatchArray(guess);
@@ -115,11 +155,21 @@
             let column = columns[i];
             column.textContent = guess[i].toUpperCase();
 
+
             if(matchArray[i] === 2){
+                if(reset === true){
+                    column.classList.remove('back');
+                }
                 column.classList.add('correct');
             }else if(matchArray[i] ===1){
+                if(reset === true){
+                    column.classList.remove('back');
+                }
                 column.classList.add('in-word');
             }else{
+                if(reset === true){
+                    column.classList.remove('back');
+                }
                 column.classList.add('incorrect');
             }
         }
